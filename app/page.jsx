@@ -3362,7 +3362,7 @@ export default function HomePage() {
     try {
       const payload = collectLocalPayload();
       const now = new Date().toISOString();
-      const { error: updateError } = await supabase
+      const { data: upsertData, error: updateError } = await supabase
         .from('user_configs')
         .upsert(
           { 
@@ -3371,8 +3371,13 @@ export default function HomePage() {
             updated_at: now
           }, 
           { onConflict: 'user_id' }
-        );
+        )
+        .select();
+
       if (updateError) throw updateError;
+      if (!upsertData || upsertData.length === 0) {
+        throw new Error('同步失败：未写入任何数据，请检查账号状态或重新登录');
+      }
       
       localStorage.setItem('localUpdatedAt', now);
 
