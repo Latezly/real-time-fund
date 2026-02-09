@@ -3238,7 +3238,8 @@ export default function HomePage() {
       }
     } catch (e) {
       console.error('同步云端配置异常', e);
-      showToast(`同步云端配置异常:${e}`, 'error');
+      // 临时关闭同步异常提示
+      // showToast(`同步云端配置异常:${e}`, 'error');
     } finally {
       setIsSyncing(false);
     }
