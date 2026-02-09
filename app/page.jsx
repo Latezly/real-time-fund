@@ -11,6 +11,7 @@ import Announcement from "./components/Announcement";
 import { DatePicker, DonateTabs, NumericInput, Stat } from "./components/Common";
 import { ChevronIcon, CloseIcon, CloudIcon, DragIcon, ExitIcon, GridIcon, ListIcon, LoginIcon, LogoutIcon, MailIcon, PlusIcon, RefreshIcon, SettingsIcon, SortIcon, StarIcon, TrashIcon, UpdateIcon, UserIcon } from "./components/Icons";
 import githubImg from "./assets/github.svg";
+import weChatGroupImg from "./assets/weChatGroup.png";
 import { supabase, isSupabaseConfigured } from './lib/supabase';
 import { fetchFundData, fetchLatestRelease, fetchShanghaiIndexDate, fetchSmartFundNetValue, searchFunds, submitFeedback } from './api/fund';
 import packageJson from '../package.json';
@@ -24,7 +25,7 @@ const nowInTz = () => dayjs().tz(TZ);
 const toTz = (input) => (input ? dayjs.tz(input, TZ) : nowInTz());
 const formatDate = (input) => toTz(input).format('YYYY-MM-DD');
 
-function FeedbackModal({ onClose, user }) {
+function FeedbackModal({ onClose, user, onOpenWeChat }) {
   const [submitting, setSubmitting] = useState(false);
   const [succeeded, setSucceeded] = useState(false);
   const [error, setError] = useState("");
@@ -148,9 +149,59 @@ function FeedbackModal({ onClose, user }) {
                 </a>
                 区留言互动
               </p>
+              <p className="muted" style={{ fontSize: '12px', lineHeight: '1.6' }}>
+                或加入我们的
+                <a
+                  className="link-button"
+                  style={{ color: 'var(--primary)', textDecoration: 'underline', padding: '0 4px', fontWeight: 600, cursor: 'pointer' }}
+                  onClick={onOpenWeChat}
+                >
+                  微信用户交流群
+                </a>
+              </p>
             </div>
           </form>
         )}
+      </motion.div>
+    </motion.div>
+  );
+}
+
+function WeChatModal({ onClose }) {
+  return (
+    <motion.div
+      className="modal-overlay"
+      role="dialog"
+      aria-modal="true"
+      aria-label="微信用户交流群"
+      onClick={onClose}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      style={{ zIndex: 10002 }}
+    >
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95, y: 20 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.95, y: 20 }}
+        className="glass card modal"
+        onClick={(e) => e.stopPropagation()}
+        style={{ maxWidth: '360px', padding: '24px' }}
+      >
+        <div className="title" style={{ marginBottom: 20, justifyContent: 'space-between' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <span>💬 微信用户交流群</span>
+            </div>
+            <button className="icon-button" onClick={onClose} style={{ border: 'none', background: 'transparent' }}>
+                <CloseIcon width="20" height="20" />
+            </button>
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'center' }}>
+            <img src={weChatGroupImg.src} alt="WeChat Group" style={{ maxWidth: '100%', borderRadius: '8px' }} />
+        </div>
+        <p className="muted" style={{ textAlign: 'center', marginTop: 16, fontSize: '14px' }}>
+            扫码加入群聊，获取最新更新与交流
+        </p>
       </motion.div>
     </motion.div>
   );
@@ -1838,6 +1889,7 @@ export default function HomePage() {
   // 反馈弹窗状态
   const [feedbackOpen, setFeedbackOpen] = useState(false);
   const [feedbackNonce, setFeedbackNonce] = useState(0);
+  const [weChatOpen, setWeChatOpen] = useState(false);
 
   // 搜索相关状态
   const [searchTerm, setSearchTerm] = useState('');
@@ -3432,7 +3484,8 @@ export default function HomePage() {
       !!clearConfirm ||
       donateOpen ||
       !!fundDeleteConfirm ||
-      updateModalOpen;
+      updateModalOpen ||
+      weChatOpen;
 
     if (isAnyModalOpen) {
       document.body.style.overflow = 'hidden';
@@ -3458,7 +3511,8 @@ export default function HomePage() {
     tradeModal.open,
     clearConfirm,
     donateOpen,
-    updateModalOpen
+    updateModalOpen,
+    weChatOpen
   ]);
 
   useEffect(() => {
@@ -4545,7 +4599,13 @@ export default function HomePage() {
             key={feedbackNonce}
             onClose={() => setFeedbackOpen(false)}
             user={user}
+            onOpenWeChat={() => setWeChatOpen(true)}
           />
+        )}
+      </AnimatePresence>
+      <AnimatePresence>
+        {weChatOpen && (
+            <WeChatModal onClose={() => setWeChatOpen(false)} />
         )}
       </AnimatePresence>
       <AnimatePresence>
